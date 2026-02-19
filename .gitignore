@@ -45,6 +45,7 @@ data/
 !model.pth
 .env
 .env.local
+trained_neural_CIFAR10.ipynb
 
 # Test
 .pytest_cache/
