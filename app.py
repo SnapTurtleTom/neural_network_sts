@@ -188,13 +188,3 @@ try:
     app.mount("/", StaticFiles(directory="static", html=True), name="static")
 except Exception as e:
     print(f"Note: Static files directory not found: {e}")
-
-
-if __name__ == "__main__":
-    import uvicorn
-    port_env = os.getenv("PORT", "8000")
-    try:
-        port = int(port_env)
-    except (TypeError, ValueError):
-        port = 8000
-    uvicorn.run(app, host="0.0.0.0", port=port)
