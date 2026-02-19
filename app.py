@@ -52,7 +52,7 @@ class Net(nn.Module):
 
 
 # Load model
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = "cpu"
 model = Net().to(device)
 
 # Try to load trained weights
