@@ -42,7 +42,7 @@ Thumbs.db
 # Project specific
 data/
 *.pth
-!model.pth  # Uncomment if committing model weights
+!model.pth
 .env
 .env.local
 
