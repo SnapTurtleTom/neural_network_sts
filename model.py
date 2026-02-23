@@ -96,7 +96,10 @@ def predict_image(image_path):
     img = img.resize((32, 32))                # resize to 32x32
     transform = transforms.Compose([
         transforms.ToTensor(),
-        transforms.Normalize((0.1307,), (0.3081,))
+        transforms.Normalize(
+        (0.4914, 0.4822, 0.4465),
+        (0.2470, 0.2435, 0.2616)
+    )
     ])
     img_tensor = transform(img).unsqueeze(0).to(device)  # add batch dim and send to device
 
