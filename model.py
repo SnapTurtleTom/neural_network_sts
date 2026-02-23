@@ -112,10 +112,11 @@ def predict_image(image_path):
     return predicted_digit, percentages
 
 # Example usage
-custom_image_path = "lizard.jpg"
-predicted, percentages = predict_image(custom_image_path)
-print(f"Predicted digit for {custom_image_path}: {predicted}")
-
-percentages_list = percentages.squeeze(0).tolist()  # remove batch dim
-for i, p in enumerate(percentages_list):
-    print(f"{i}: {p:.2f}%")
+if __name__ == "__main__":
+    custom_image_path = "lizard.jpg"
+    predicted, percentages = predict_image(custom_image_path)
+    print(f"Predicted: {predicted}")
+    
+    percentages_list = percentages.squeeze(0).tolist()  # remove batch dim
+    for i, p in enumerate(percentages_list):
+        print(f"{i}: {p:.2f}%")

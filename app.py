@@ -5,7 +5,7 @@ from flask_cors import CORS
 from PIL import Image
 from torchvision import transforms
 
-from network import Net   # your model architecture
+from model import Net   # your model architecture
 
 # -----------------------------
 # Flask Setup
@@ -20,8 +20,10 @@ device = torch.device("cpu")
 
 model = Net().to(device)
 
+MODEL_PATH = os.path.join(os.path.dirname(__file__), "model.pth")
+
 model.load_state_dict(
-    torch.load("model.pth", map_location=device)
+    torch.load(MODEL_PATH, map_location=device)
 )
 
 model.eval()
@@ -44,6 +46,9 @@ transform = transforms.Compose([
 @app.route("/upload-page", methods=["POST"])
 def upload_page():
 
+    if "image_uploads" not in request.files:
+        return jsonify({"error": "No file uploaded"}), 400
+
     file = request.files["image_uploads"]
 
     image = Image.open(file).convert("RGB")
@@ -51,11 +56,15 @@ def upload_page():
     tensor = transform(image).unsqueeze(0).to(device)
 
     with torch.no_grad():
-        output = model(tensor)
-        prediction = torch.argmax(output, dim=1).item()
+        output = model(tensor)  
+        probabilities = torch.softmax(output, dim=1)
+        prediction = torch.argmax(probabilities, dim=1).item()
+        confidence = torch.max(probabilities).item()
+        
 
     return jsonify({
-        "predictions": [prediction]
+        "prediction": prediction,
+        "confidence": float(confidence)
     })
 
 # -----------------------------
