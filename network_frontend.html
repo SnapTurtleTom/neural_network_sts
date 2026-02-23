@@ -63,5 +63,17 @@
       }
    </script>
    <button onclick="erase()">Erase</button>
+   <form action="/upload-page" method="post" enctype="multipart/form-data">
+  <label for="image_uploads">Choose images to upload (PNG, JPG)</label>
+  <input
+    type="file"
+    id="image_uploads"
+    name="image_uploads"
+    accept="image/png, image/jpeg"
+    multiple
+  />
+  <button>Send Files</button>
+</form>
+
 </body>
 </html>
