@@ -13,7 +13,7 @@ from PIL import Image
 # -----------------------------
 # Define the neural network
 # -----------------------------
-class Net(nn.Module):
+class Cifar_Net(nn.Module):
     def __init__(self):
         super().__init__()
         # Convolutional layers
@@ -65,7 +65,7 @@ test_loader = DataLoader(test_dataset, batch_size=64, shuffle=False)
 # Setup device, model, loss, optimizer
 # -----------------------------
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model = Net().to(device)
+model = Cifar_Net().to(device)
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 

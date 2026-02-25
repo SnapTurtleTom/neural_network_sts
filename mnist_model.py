@@ -13,7 +13,7 @@ from PIL import Image
 # -----------------------------
 # Define the neural network
 # -----------------------------
-class Net(nn.Module):
+class Mnist_Net(nn.Module):
     def __init__(self):
         super().__init__()
         # Convolutional layers
@@ -62,31 +62,28 @@ test_loader = DataLoader(test_dataset, batch_size=64, shuffle=False)
 # Setup device, model, loss, optimizer
 # -----------------------------
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model = Net().to(device)
+model = Mnist_Net().to(device)
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 
 # -----------------------------
 # Training loop
 # -----------------------------
-epochs = 5
+model.load_state_dict(torch.load("mnist_model.pth", weights_only=True))
+model.eval()  # set model to evaluation mode
+correct = 0
+total = 0
 
-for epoch in range(epochs):
-    model.train()  # set model to training mode
-    running_loss = 0.0
-
-    for images, labels in train_loader:
+with torch.no_grad():  # no gradients needed for evaluation
+    for images, labels in test_loader:
         images, labels = images.to(device), labels.to(device)
+        outputs = model(images)
+        predictions = outputs.argmax(dim=1)
+        total += labels.size(0)
+        correct += (predictions == labels).sum().item()
 
-        optimizer.zero_grad()        # clear previous gradients
-        outputs = model(images)      # forward pass (calls forward())
-        loss = criterion(outputs, labels)
-        loss.backward()              # backpropagation
-        optimizer.step()             # update weights
-
-        running_loss += loss.item()
-
-    print(f"Epoch {epoch+1}/{epochs} - Loss: {(running_loss / len(train_loader)):.3f}")
+accuracy = 100 * correct / total
+print(f"Test Accuracy: {accuracy:.2f}%")
 
 # -----------------------------
 # Test / evaluation

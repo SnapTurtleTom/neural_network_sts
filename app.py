@@ -5,8 +5,19 @@ from flask_cors import CORS
 from PIL import Image
 from torchvision import transforms
 
-from model import Net   # your model architecture
+from model import Cifar_Net   # your CIFAR model architecture
 
+from mnist_model import Mnist_Net  # your MNIST model architecture
+
+class_names = [
+    "Airplane", "Automobile", "Bird", "Cat", "Deer",
+    "Dog", "Frog", "Horse", "Ship", "Truck"
+]
+
+mnist_class_names = [
+    "ZERO", "ONE", "TWO", "THREE", "FOUR",
+    "FIVE", "SIX", "SEVEN", "EIGHT", "NINE"
+]
 # -----------------------------
 # Flask Setup
 # -----------------------------
@@ -18,16 +29,29 @@ CORS(app)
 # -----------------------------
 device = torch.device("cpu")
 
-model = Net().to(device)
+cifar_model = Cifar_Net().to(device)
 
 MODEL_PATH = os.path.join(os.path.dirname(__file__), "model.pth")
 
-model.load_state_dict(
+cifar_model.load_state_dict(
     torch.load(MODEL_PATH, map_location=device)
 )
 
-model.eval()
+cifar_model.eval()
 
+# -----------------------------
+# Load MNIST model
+# -----------------------------
+
+mnist_model = Mnist_Net().to(device)
+
+MNIST_MODEL_PATH = os.path.join(os.path.dirname(__file__), "mnist_model.pth")
+
+mnist_model.load_state_dict(
+    torch.load(MNIST_MODEL_PATH, map_location=device)
+)
+
+mnist_model.eval()
 # -----------------------------
 # Preprocessing (CIFAR10)
 # -----------------------------
@@ -39,7 +63,14 @@ transform = transforms.Compose([
         (0.2470, 0.2435, 0.2616)
     )
 ])
-
+# -----------------------------
+# Preprocessing (MNIST)
+# -----------------------------
+transform_MNIST = transforms.Compose([
+        transforms.Resize((28, 28)),
+        transforms.ToTensor(),
+        transforms.Normalize((0.1307,), (0.3081,))
+    ])
 # -----------------------------
 # API Endpoint
 # -----------------------------
@@ -56,17 +87,39 @@ def upload_page():
     tensor = transform(image).unsqueeze(0).to(device)
 
     with torch.no_grad():
-        output = model(tensor)  
+        output = cifar_model(tensor)  
         probabilities = torch.softmax(output, dim=1)
         prediction = torch.argmax(probabilities, dim=1).item()
         confidence = torch.max(probabilities).item()
-        
+        predicted_class = class_names[prediction]
+
 
     return jsonify({
-        "prediction": prediction,
+        "prediction": predicted_class,
         "confidence": float(confidence)
     })
 
+@app.route("/upload-page-drawing", methods=["POST"])
+def upload_page_drawing():
+    file = request.files["image_uploads"]
+
+    image = Image.open(file).convert("L")
+
+    tensor = transform_MNIST(image).unsqueeze(0).to(device)
+
+    with torch.no_grad():
+        output = mnist_model(tensor)  
+        probabilities = torch.softmax(output, dim=1)
+        prediction = torch.argmax(probabilities, dim=1).item()
+        confidence = torch.max(probabilities).item()
+        predicted_class = mnist_class_names[prediction]
+
+
+    return jsonify({
+        "prediction": predicted_class,
+        "confidence": float(confidence)
+    })
+    
 # -----------------------------
 # Run Server
 # -----------------------------
