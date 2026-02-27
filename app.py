@@ -5,9 +5,9 @@ from flask_cors import CORS
 from PIL import Image
 from torchvision import transforms
 
-from model import Cifar_Net   # your CIFAR model architecture
+from model import Cifar_Net   # my CIFAR model architecture
 
-from mnist_model import Mnist_Net  # your MNIST model architecture
+from mnist_model import Mnist_Net  # my MNIST model architecture
 
 class_names = [
     "Airplane", "Automobile", "Bird", "Cat", "Deer",

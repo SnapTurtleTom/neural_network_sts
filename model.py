@@ -17,12 +17,12 @@ class Cifar_Net(nn.Module):
     def __init__(self):
         super().__init__()
         # Convolutional layers
-        self.conv1 = nn.Conv2d(3, 6, 5)    # input: 1x28x28, output: 6x24x24
+        self.conv1 = nn.Conv2d(3, 32, 5)
         self.pool = nn.MaxPool2d(2, 2)
-        self.conv2 = nn.Conv2d(6, 16, 5)   # input: 6x12x12, output: 16x8x8
+        self.conv2 = nn.Conv2d(32, 64, 5)
 
         # Fully connected layers
-        self.fc1 = nn.Linear(16 * 5 * 5, 120)  # after 2 poolings
+        self.fc1 = nn.Linear(64 * 5 * 5, 120)  # after 2 poolings
         self.fc2 = nn.Linear(120, 84)
         self.fc3 = nn.Linear(84, 10)           # CIFAR classes
 
