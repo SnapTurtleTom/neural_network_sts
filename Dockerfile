@@ -10,16 +10,17 @@ COPY requirements.txt .
 # Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
-COPY app.py .
-COPY static/ ./static/
-COPY model.pth .
+# Copy application files (including models) into image
+# using a single COPY ensures the weights and source files
+# are all present for deployment.
+COPY . .
 
-# Expose port
+# Expose port for the web service
 EXPOSE 8000
 
 # Set environment variable for production
 ENV PYTHONUNBUFFERED=1
 
-# Run the application
-CMD ["python", "-m", "uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
+# Use gunicorn to serve the Flask app in production
+# binding to the same port that is exposed above.
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "app:app"]
