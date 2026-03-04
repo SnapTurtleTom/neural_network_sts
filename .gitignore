@@ -42,7 +42,7 @@ Thumbs.db
 # Project specific
 data/
 *.pth
-!model.pth
+!*model.pth
 .env
 .env.local
 trained_neural_CIFAR10.ipynb
