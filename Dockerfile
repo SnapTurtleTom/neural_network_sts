@@ -15,12 +15,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 # are all present for deployment.
 COPY . .
 
+# Set environment variable for production
+ENV PYTHONUNBUFFERED=1
+ENV PORT=8000
+
 # Expose port for the web service
 EXPOSE 8000
 
-# Set environment variable for production
-ENV PYTHONUNBUFFERED=1
-
 # Use gunicorn to serve the Flask app in production
-# binding to the same port that is exposed above.
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "app:app"]
+CMD gunicorn --bind 0.0.0.0:${PORT} app:app
