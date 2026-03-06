@@ -1,7 +1,6 @@
-flask
-flask-cors
+fastapi
+uvicorn
 pillow
-gunicorn
 python-dotenv
 
 numpy

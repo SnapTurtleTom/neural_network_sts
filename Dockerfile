@@ -22,5 +22,5 @@ ENV PORT=8000
 # Expose port for the web service
 EXPOSE 8000
 
-# Use gunicorn to serve the Flask app in production
-CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:${PORT} app:app"]
+# Use uvicorn to serve the FastAPI app in production
+CMD ["uvicorn", "--host", "0.0.0.0", "--port", "8000", "app:app"]

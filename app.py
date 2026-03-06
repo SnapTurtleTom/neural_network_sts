@@ -1,9 +1,11 @@
 import torch
 import os
-from flask import Flask, request, jsonify
-from flask_cors import CORS
+from fastapi import FastAPI, File, UploadFile
+from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image
 from torchvision import transforms
+import io
 
 from model import Cifar_Net   # my CIFAR model architecture
 
@@ -19,10 +21,18 @@ mnist_class_names = [
     "FIVE", "SIX", "SEVEN", "EIGHT", "NINE"
 ]
 # -----------------------------
-# Flask Setup
+# FastAPI Setup
 # -----------------------------
-app = Flask(__name__)
-CORS(app)
+app = FastAPI()
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # -----------------------------
 # Load Model
@@ -72,65 +82,49 @@ transform_MNIST = transforms.Compose([
         transforms.Normalize((0.1307,), (0.3081,))
     ])
 # -----------------------------
-# API Endpoint
+# API Endpoints
 # -----------------------------
-@app.route("/upload-page", methods=["POST"])
-def upload_page():
-
-    if "image_uploads" not in request.files:
-        return jsonify({"error": "No file uploaded"}), 400
-
-    file = request.files["image_uploads"]
-
-    image = Image.open(file).convert("RGB")
-
-    tensor = transform(image).unsqueeze(0).to(device)
-
-    with torch.no_grad():
-        output = cifar_model(tensor)  
-        probabilities = torch.softmax(output, dim=1)
-        prediction = torch.argmax(probabilities, dim=1).item()
-        confidence = torch.max(probabilities).item()
-        predicted_class = class_names[prediction]
-
-
-    return jsonify({
-        "prediction": predicted_class,
-        "confidence": float(confidence)
-    })
-
-@app.route("/upload-page-drawing", methods=["POST"])
-def upload_page_drawing():
-    file = request.files["image_uploads"]
-
-    image = Image.open(file).convert("L")
-
-    tensor = transform_MNIST(image).unsqueeze(0).to(device)
-
-    with torch.no_grad():
-        output = mnist_model(tensor)  
-        probabilities = torch.softmax(output, dim=1)
-        prediction = torch.argmax(probabilities, dim=1).item()
-        confidence = torch.max(probabilities).item()
-        predicted_class = mnist_class_names[prediction]
-
-
-    return jsonify({
-        "prediction": predicted_class,
-        "confidence": float(confidence)
-    })
-    
-# -----------------------------
-# Run Server
-# -----------------------------
-if __name__ == "__main__":
+@app.post("/upload-page")
+async def upload_page(image_uploads: UploadFile = File(...)):
     try:
-        port = int(os.environ.get("PORT", 5000))
-    except (ValueError, TypeError):
-        port = 5000
+        contents = await image_uploads.read()
+        image = Image.open(io.BytesIO(contents)).convert("RGB")
 
-    app.run(
-        host="0.0.0.0",
-        port=port,
-        debug=True
-    )
+        tensor = transform(image).unsqueeze(0).to(device)
+
+        with torch.no_grad():
+            output = cifar_model(tensor)  
+            probabilities = torch.softmax(output, dim=1)
+            prediction = torch.argmax(probabilities, dim=1).item()
+            confidence = torch.max(probabilities).item()
+            predicted_class = class_names[prediction]
+
+        return JSONResponse({
+            "prediction": predicted_class,
+            "confidence": float(confidence)
+        })
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=400)
+
+
+@app.post("/upload-page-drawing")
+async def upload_page_drawing(image_uploads: UploadFile = File(...)):
+    try:
+        contents = await image_uploads.read()
+        image = Image.open(io.BytesIO(contents)).convert("L")
+
+        tensor = transform_MNIST(image).unsqueeze(0).to(device)
+
+        with torch.no_grad():
+            output = mnist_model(tensor)  
+            probabilities = torch.softmax(output, dim=1)
+            prediction = torch.argmax(probabilities, dim=1).item()
+            confidence = torch.max(probabilities).item()
+            predicted_class = mnist_class_names[prediction]
+
+        return JSONResponse({
+            "prediction": predicted_class,
+            "confidence": float(confidence)
+        })
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=400)
