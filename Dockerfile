@@ -20,7 +20,7 @@ ENV PYTHONUNBUFFERED=1
 ENV PORT=8000
 
 # Expose port for the web service
-EXPOSE 8000
+EXPOSE 7860
 
 # Use uvicorn to serve the FastAPI app in production
-CMD ["uvicorn", "--host", "0.0.0.0", "--port", "8000", "app:app"]
+CMD ["uvicorn", "--host", "0.0.0.0", "--port", "7860", "app:app"]
