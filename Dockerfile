@@ -23,4 +23,4 @@ ENV PORT=8000
 EXPOSE 8000
 
 # Use gunicorn to serve the Flask app in production
-CMD gunicorn --bind 0.0.0.0:${PORT} app:app
+CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:${PORT} app:app"]
